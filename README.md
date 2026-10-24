@@ -10,7 +10,8 @@ silicon, because UniWindowController ships a universal `LibUniWinC.bundle`.
 - **Feasibility audit, feature matrix, effort estimate and Intel-specific
   guidance:** [`PORTING-macOS.md`](PORTING-macOS.md)
 - **Native backend plugin (source + build script):** [`macos-native/`](macos-native/README.md)
-- **Build it:** on a Mac run `./macos-native/build.sh`, then in Unity
+- **Step-by-step build instructions:** [`BUILDING-macOS.md`](BUILDING-macOS.md)
+- **Optional native plugin:** on a Mac run `./macos-native/build.sh`, then in Unity
   `MateEngine → Build → Validate macOS setup` → `MateEngine → Build → macOS Universal`
 
 Status: the **basics work** — VRM upload, idle/drag/dance animations, spring

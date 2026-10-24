@@ -7,9 +7,11 @@ already runs on macOS unmodified. The Windows-specific part is a *shim* of
 Win32 calls bolted on around it: window enumeration, system tray, desktop
 capture, audio meters. Every one of those has a macOS equivalent.
 
-This document is the audit and the plan. Alongside it, this branch adds the
-first slice of the actual port: a native macOS plugin, the C# bindings for it,
-and a build script. See [What's already here](#whats-already-here).
+This document is the audit and the plan. **To actually build it, follow
+[`BUILDING-macOS.md`](BUILDING-macOS.md)** — that's the step-by-step guide.
+Alongside this report, this branch adds the first slice of the port: the game
+scripts the basics needed, a native macOS plugin, the C# bindings for it, and a
+build script. See [What's already here](#whats-already-here).
 
 > **Basis of these claims.** Everything below comes from reading this repository
 > at commit `2c5ea6b` ("Prepare 3.4 Features"). No Unity editor and no Mac were
@@ -88,6 +90,7 @@ the big one, followed by the Dock and the menu bar.
 ## Contents
 
 - [Current focus: VRM + animations + the basics](#current-focus-vrm--animations--the-basics)
+- [Building it: `BUILDING-macOS.md`](BUILDING-macOS.md)
 - [Why it doesn't run on macOS today](#why-it-doesnt-run-on-macos-today)
 - [What already works](#what-already-works)
 - [The four real blockers](#the-four-real-blockers)
