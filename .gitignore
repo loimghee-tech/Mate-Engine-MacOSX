@@ -75,3 +75,6 @@ Assets/AssetStoreTools*
 Assets/Example Avatar - USED FOR MATE ENGINE
 ProjectSettings/Packages
 UserSettings/Layouts
+
+# macOS native plugin build output
+macos-native/build/
