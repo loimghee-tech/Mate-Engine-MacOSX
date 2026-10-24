@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using UnityEngine;
@@ -48,6 +48,13 @@ public class AvatarTaskbarController : MonoBehaviour
 
     void Start()
     {
+#if UNITY_STANDALONE_OSX
+        // macOS port: there is no taskbar on macOS; the Dock equivalent needs the display work
+        // area, which is not wired up yet. Disabling keeps UpdateTaskbarRect from
+        // throwing on user32. See PORTING-macOS.md.
+        enabled = false;
+        return;
+#endif
         unityHWND = Process.GetCurrentProcess().MainWindowHandle;
         animator = avatarAnimator ?? GetComponent<Animator>();
 

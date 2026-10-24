@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using SFB;
@@ -68,10 +68,15 @@ public class MEModHandler : MonoBehaviour
     void OpenFileDialogAndLoadMod()
     {
         var ext = new[] { new ExtensionFilter("MateEngine Files", "me", "unity3d") };
+#if UNITY_STANDALONE_OSX
+        var src = MateEngine.MacOS.MacFileDialog.OpenFile("Select Mod or Dance Asset", ext);
+        if (string.IsNullOrEmpty(src)) return;
+#else
         var paths = StandaloneFileBrowser.OpenFilePanel("Select Mod or Dance Asset", ".", ext, false);
         if (paths.Length == 0 || string.IsNullOrEmpty(paths[0])) return;
 
         var src = paths[0];
+#endif
         var dest = Path.Combine(modFolderPath, Path.GetFileName(src));
         try { File.Copy(src, dest, true); } catch { }
 

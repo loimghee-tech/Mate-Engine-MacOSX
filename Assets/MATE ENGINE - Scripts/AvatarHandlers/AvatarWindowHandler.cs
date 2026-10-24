@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -117,7 +117,13 @@ public class AvatarWindowHandler : MonoBehaviour
     void Start()
     {
         unityHWND = Process.GetCurrentProcess().MainWindowHandle;
+#if !UNITY_STANDALONE_OSX
+        // MainWindowHandle is always IntPtr.Zero on macOS and GetCurrentProcessId
+        // is a kernel32 import, so neither is usable there. Sitting on other
+        // apps' windows needs CGWindowList and is not ported yet - see
+        // PORTING-macOS.md. Everything else in this component stays intact.
         _currentPid = GetCurrentProcessId();
+#endif
         animator = GetComponent<Animator>();
         controller = GetComponent<AvatarAnimatorController>();
         if (targetCamera == null) targetCamera = Camera.main;
@@ -269,7 +275,12 @@ public class AvatarWindowHandler : MonoBehaviour
         }
         wasDragging = controller.isDragging;
     }
-    void LateUpdate() { UpdateOccluderQuadsFrameSync(); }
+    void LateUpdate()
+    {
+#if !UNITY_STANDALONE_OSX
+        UpdateOccluderQuadsFrameSync();
+#endif
+    }
     bool DraggedPastSnapThreshold()
     {
         Kirurobo.WinApi.POINT cp;
@@ -882,7 +893,16 @@ public class AvatarWindowHandler : MonoBehaviour
         r.Left = p.X; r.Top = p.Y; r.Right = p.X + client.Right; r.Bottom = p.Y + client.Bottom;
         return true;
     }
-    void SetTopMost(bool en) => SetWindowPos(unityHWND, en ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+    void SetTopMost(bool en)
+    {
+#if UNITY_STANDALONE_OSX
+        // On macOS the window's top-most state belongs to UniWindowController
+        // (LibUniWinC). Driving WS_EX_TOPMOST-equivalent flags from here as well
+        // would fight the controller, so this is intentionally a no-op.
+#else
+        SetWindowPos(unityHWND, en ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+#endif
+    }
 
     bool IsWindowMaximized(IntPtr hwnd)
     {

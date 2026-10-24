@@ -7,13 +7,15 @@
  * same shapes, same coordinate convention (top-left origin, +y down, points),
  * so the math in the Avatar* handlers carries over unchanged.
  *
- * Only compiled into the macOS standalone player. The plugin is deliberately
- * NOT loaded into the Unity Editor (it changes NSApplication's activation
- * policy, which would hide the Editor from the Dock), so nothing here may be
- * called from editor code paths.
+ * Compiled whenever the active build target is macOS, which includes the
+ * macOS Editor. The plugin itself is not imported into the Editor -- its .meta
+ * sets the Editor platform to disabled -- because MMN_Initialize changes the
+ * app's activation policy and would hide the Unity Editor from the Dock.
+ * MacDesktop therefore guards every call: in the Editor the DllImport fails,
+ * the exception is caught, and IsAvailable stays false.
  */
 
-#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+#if UNITY_STANDALONE_OSX
 
 using System;
 using System.Runtime.InteropServices;

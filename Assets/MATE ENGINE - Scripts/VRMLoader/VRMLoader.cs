@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
@@ -107,9 +107,18 @@ public class VRMLoader : MonoBehaviour
 
         isLoading = true;
         var extensions = new[] { new ExtensionFilter("Model Files", "vrm", "me", "prefab") };
+#if UNITY_STANDALONE_OSX
+        // Routed through MacFileDialog so a missing or x86_64-only native dialog
+        // bundle logs an actionable message instead of throwing. LoadVRM itself
+        // is pure managed code (GlbFileParser + Vrm10Importer) and needs no change.
+        string selected = MateEngine.MacOS.MacFileDialog.OpenFile("Select Model File", extensions);
+        if (!string.IsNullOrEmpty(selected))
+            LoadVRM(selected);
+#else
         string[] paths = StandaloneFileBrowser.OpenFilePanel("Select Model File", "", extensions, false);
         if (paths.Length > 0 && !string.IsNullOrEmpty(paths[0]))
             LoadVRM(paths[0]);
+#endif
 
         isLoading = false;
     }

@@ -90,7 +90,7 @@ namespace MateEngine.MacOS
             if (_initialized) return;
             _initialized = true;
 
-#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+#if UNITY_STANDALONE_OSX
             try
             {
                 int api = MateMacNative.MMN_GetApiVersion();
@@ -148,7 +148,7 @@ namespace MateEngine.MacOS
             if (_displaysCache != null && Time.unscaledTime - _displaysCacheTime < DisplaysCacheSeconds)
                 return _displaysCache;
 
-#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+#if UNITY_STANDALONE_OSX
             try
             {
                 int count = MateMacNative.MMN_GetDisplayCount();
@@ -201,7 +201,7 @@ namespace MateEngine.MacOS
         public static float MenuBarHeight()
         {
             if (!IsAvailable) return 0f;
-#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+#if UNITY_STANDALONE_OSX
             try { return (float)MateMacNative.MMN_GetMenuBarHeight(); }
             catch { return 0f; }
 #else
@@ -219,7 +219,7 @@ namespace MateEngine.MacOS
             dockRect = default;
             if (!IsAvailable) return false;
 
-#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+#if UNITY_STANDALONE_OSX
             try
             {
                 int edge;
@@ -260,7 +260,7 @@ namespace MateEngine.MacOS
         {
             if (!IsAvailable || maxWindows <= 0) return Array.Empty<MacWindow>();
 
-#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+#if UNITY_STANDALONE_OSX
             try
             {
                 int count = MateMacNative.MMN_GetWindowCount();
@@ -301,7 +301,7 @@ namespace MateEngine.MacOS
             window = default;
             if (!IsAvailable || windowId == 0) return false;
 
-#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+#if UNITY_STANDALONE_OSX
             try
             {
                 MateMacNative.MMNWindow raw;
@@ -331,7 +331,7 @@ namespace MateEngine.MacOS
         /// </summary>
         public static Vector2 GetCursorPosition()
         {
-#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+#if UNITY_STANDALONE_OSX
             if (IsAvailable)
             {
                 try
@@ -358,7 +358,7 @@ namespace MateEngine.MacOS
             get
             {
                 if (!IsAvailable) return false;
-#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+#if UNITY_STANDALONE_OSX
                 try { return MateMacNative.MMN_HasScreenCapturePermission() == 1; }
                 catch { return false; }
 #else
@@ -374,7 +374,7 @@ namespace MateEngine.MacOS
         public static bool RequestScreenCapturePermission()
         {
             if (!IsAvailable) return false;
-#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+#if UNITY_STANDALONE_OSX
             try { return MateMacNative.MMN_RequestScreenCapturePermission() == 1; }
             catch { return false; }
 #else
@@ -392,7 +392,7 @@ namespace MateEngine.MacOS
         {
             if (!IsAvailable || windowId == 0) return false;
 
-#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+#if UNITY_STANDALONE_OSX
             try
             {
                 MateMacNative.MMNImage image;
@@ -420,7 +420,7 @@ namespace MateEngine.MacOS
         {
             if (!IsAvailable) return false;
 
-#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+#if UNITY_STANDALONE_OSX
             try
             {
                 var native = new MateMacNative.MMNRect(region.x, region.y, region.width, region.height);
@@ -446,7 +446,7 @@ namespace MateEngine.MacOS
         {
             if (!IsAvailable) return false;
 
-#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+#if UNITY_STANDALONE_OSX
             try
             {
                 MateMacNative.MMNImage image;
@@ -478,7 +478,7 @@ namespace MateEngine.MacOS
         public static void SetDockIconHidden(bool hidden)
         {
             if (!IsAvailable) return;
-#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+#if UNITY_STANDALONE_OSX
             try { MateMacNative.MMN_SetAccessoryActivationPolicy(hidden ? 1 : 0); }
             catch { }
 #endif
@@ -491,7 +491,7 @@ namespace MateEngine.MacOS
         public static void DisableAppNap()
         {
             if (!IsAvailable) return;
-#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+#if UNITY_STANDALONE_OSX
             try { MateMacNative.MMN_SetAppNapEnabled(1); }
             catch { }
 #endif
@@ -500,7 +500,7 @@ namespace MateEngine.MacOS
         public static void ActivateApp()
         {
             if (!IsAvailable) return;
-#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+#if UNITY_STANDALONE_OSX
             try { MateMacNative.MMN_ActivateApp(); }
             catch { }
 #endif
@@ -513,7 +513,7 @@ namespace MateEngine.MacOS
         public static bool GetLaunchAtLogin()
         {
             if (!IsAvailable) return false;
-#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+#if UNITY_STANDALONE_OSX
             try { return MateMacNative.MMN_GetLaunchAtLogin() == 1; }
             catch { return false; }
 #else
@@ -524,7 +524,7 @@ namespace MateEngine.MacOS
         public static bool SetLaunchAtLogin(bool enabled)
         {
             if (!IsAvailable) return false;
-#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+#if UNITY_STANDALONE_OSX
             try { return MateMacNative.MMN_SetLaunchAtLogin(enabled ? 1 : 0) == 0; }
             catch { return false; }
 #else
@@ -541,7 +541,7 @@ namespace MateEngine.MacOS
             get
             {
                 if (!IsAvailable) return false;
-#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+#if UNITY_STANDALONE_OSX
                 try { return MateMacNative.MMN_AudioTapSupported() == 1; }
                 catch { return false; }
 #else
@@ -558,7 +558,7 @@ namespace MateEngine.MacOS
         public static float GetOutputPeak()
         {
             if (!IsAvailable) return -1f;
-#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+#if UNITY_STANDALONE_OSX
             try { return (float)MateMacNative.MMN_AudioGetOutputPeak(); }
             catch { return -1f; }
 #else
@@ -569,7 +569,7 @@ namespace MateEngine.MacOS
         public static bool StartAudioTap()
         {
             if (!IsAvailable) return false;
-#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+#if UNITY_STANDALONE_OSX
             try { return MateMacNative.MMN_AudioStart() == 0; }
             catch { return false; }
 #else
@@ -580,7 +580,7 @@ namespace MateEngine.MacOS
         public static void StopAudioTap()
         {
             if (!IsAvailable) return;
-#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+#if UNITY_STANDALONE_OSX
             try { MateMacNative.MMN_AudioStop(); }
             catch { }
 #endif
@@ -590,7 +590,7 @@ namespace MateEngine.MacOS
         // Helpers
         // ------------------------------------------------------------------
 
-#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+#if UNITY_STANDALONE_OSX
         private static Rect ToRect(MateMacNative.MMNRect r)
         {
             return new Rect((float)r.x, (float)r.y, (float)r.width, (float)r.height);
@@ -628,7 +628,7 @@ namespace MateEngine.MacOS
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Bootstrap()
         {
-#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+#if UNITY_STANDALONE_OSX
             EnsureInitialized();
             if (!_available) return;
 

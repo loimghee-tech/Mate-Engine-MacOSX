@@ -18,8 +18,76 @@ and a build script. See [What's already here](#whats-already-here).
 
 ---
 
+## Current focus: VRM + animations + the basics
+
+The port is now scoped to what actually makes a usable desktop pet. The local
+LLM, dance-to-music, and big-screen / screensaver / ambient probe are **out of
+scope** — they are Windows-specific or need extra permissions, and none of them
+are needed to sit a VRM avatar on your desktop.
+
+**The good news: the basics need no native build at all.** Every value they
+need — window position, window size, cursor position, and the transparent
+click-through window itself — already comes from UniWindowController, whose
+`LibUniWinC.bundle` ships universal. The `macos-native/` plugin is still there
+for the features that *do* need it (Dock, menu bar, window list, capture), but
+you can ship the basics without ever running `build.sh`.
+
+### What works in this pass
+
+| Feature | Status |
+|---|---|
+| **Load a VRM from the upload button** | ✅ Route added; loader itself is pure managed code |
+| **Idle / drag / dance animations** | ✅ NAudio creation removed on macOS, which was the crash |
+| **Spring bones react to window dragging** | ✅ Ported to `DesktopGeometry` (window origin deltas) |
+| **Mouse → head / eye / spine tracking** | ✅ Cursor via LibUniWinC (`AvatarMouseTracking` was already portable) |
+| **Transparent, click-through, always-on-top** | ✅ UniWindowController, universal bundle |
+| **VRM1 look-at, blend shapes, shaders, particles** | ✅ Pure Unity |
+| **Menu edge-flipping** | ✅ Rewritten on top of `MacDesktop.GetDisplays()` |
+| **Anything else** | Not ported (see below) |
+
+### What is switched off on macOS, and why
+
+These components now disable themselves instead of throwing on the first
+`user32` call:
+
+| Component | Why |
+|---|---|
+| `AvatarWindowHandler` (sitting on other apps' windows) | Needs `CGWindowList` window enumeration + z-order retuning. Biggest job left. |
+| `AvatarTaskbarController` (taskbar sitting) | No taskbar on macOS; Dock equivalent needs the display work area. |
+| `AvatarBigScreenHandler` / `Timer` / `ScreenSaver` | Big screen mode — out of scope. |
+| `DesktopAmbientProbe` | Already `#if`-guarded for Windows; stays inert. |
+| Dance-to-music (`AvatarAnimatorController` audio path) | WASAPI replaced by a CoreAudio tap that isn't implemented yet. **Animations are unaffected** — only the auto-dance trigger is off. |
+| Local LLM | Its `undreamai` server binary is a Windows build; not needed here. |
+| Discord Rich Presence | Ships no macOS native binary at all. |
+
+### How the port keeps Windows intact
+
+Every change is additive and compile-time guarded:
+
+- Windows keeps its exact original `user32` code inside `#if UNITY_STANDALONE_WIN`.
+- macOS gets a parallel branch. The touch points are `GetCurrentProcessId`
+  in `AvatarWindowHandler.Start`, `SetTopMost` (a no-op on macOS because
+  UniWindowController owns that state), and the window-origin read in
+  `AvatarGravityController`.
+- `DesktopGeometry` and `MacFileDialog` only do anything on macOS.
+
+### Reality check
+
+The basics are in place, but **nothing here has been compiled**. Expect a first
+run in Unity's macOS target to surface a handful of small things — most likely a
+missing `using`, an API name I guessed, or a component that turns out to disable
+something you wanted. That is a short debugging session, not a redesign. The
+honest estimate for "builds, launches, loads a VRM, animates" is **1–3 days of
+iteration**, versus the ~3–4 week MVP in the plan below.
+
+The plan below still applies to everything *after* the basics: window sitting is
+the big one, followed by the Dock and the menu bar.
+
+---
+
 ## Contents
 
+- [Current focus: VRM + animations + the basics](#current-focus-vrm--animations--the-basics)
 - [Why it doesn't run on macOS today](#why-it-doesnt-run-on-macos-today)
 - [What already works](#what-already-works)
 - [The four real blockers](#the-four-real-blockers)

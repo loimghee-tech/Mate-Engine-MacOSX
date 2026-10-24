@@ -13,9 +13,13 @@ silicon, because UniWindowController ships a universal `LibUniWinC.bundle`.
 - **Build it:** on a Mac run `./macos-native/build.sh`, then in Unity
   `MateEngine → Build → Validate macOS setup` → `MateEngine → Build → macOS Universal`
 
-Status: the platform layer, plugin and build pipeline are in place; the game
-scripts that call Win32 directly are not yet ported. See the next-steps list in
-`PORTING-macOS.md`. Nothing in this tree changes the Windows build.
+Status: the **basics work** — VRM upload, idle/drag/dance animations, spring
+bones, mouse tracking, transparent click-through window. The only native
+dependency they need is UniWindowController's `LibUniWinC.bundle`, which already
+ships universal, so no native build step is required for them. Window sitting,
+Dock sitting, big screen mode, screensaver, screen capture and dance-to-music are
+switched off on macOS (see `PORTING-macOS.md`). Nothing in this tree changes the
+Windows build.
 
 # Support MateEngine on Steam!
 Buy on Steam: https://store.steampowered.com/app/3625270/MateEngine/

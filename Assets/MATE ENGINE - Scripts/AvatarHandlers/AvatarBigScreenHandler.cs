@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -78,6 +78,14 @@ public class AvatarBigScreenHandler : MonoBehaviour
 
     void Start()
     {
+#if UNITY_STANDALONE_OSX
+        // macOS port: big screen mode scales the avatar into a 16:9 canvas and can mirror the
+        // desktop, both of which read the Win32 window rect. Out of scope for the first
+        // cut, so the component disables itself instead of throwing on user32.
+        // See PORTING-macOS.md.
+        enabled = false;
+        return;
+#endif
         unityHWND = Process.GetCurrentProcess().MainWindowHandle;
         if (MainCamera == null) MainCamera = Camera.main;
         if (avatarAnimator == null) avatarAnimator = GetComponent<Animator>();
