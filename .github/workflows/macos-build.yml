@@ -1,0 +1,85 @@
+name: macOS build
+
+# Produces a Universal (Intel + Apple silicon) MateEngineX.app.
+#
+# Requires three repository secrets so the runner can activate Unity:
+#   UNITY_LICENSE   - contents of your .ulf file (see the GameCI activation docs)
+#   UNITY_EMAIL     - your Unity account email
+#   UNITY_PASSWORD  - your Unity account password
+#
+# Without them the job fails at activation, not at compile - that is expected.
+#
+# Runner choice: macos-15 (Apple silicon) is the default for cost. Intel
+# coverage is handled by the Universal build itself, and GitHub retires Intel
+# macOS runners in August 2027, so there is no reason to depend on them.
+#
+# No Unity here in the sandbox and no Mac, so this workflow has never been
+# executed. Treat the first run as part of the debugging.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "Assets/**"
+      - "Packages/**"
+      - "ProjectSettings/**"
+      - "macos-native/**"
+      - ".github/workflows/macos-build.yml"
+
+jobs:
+  build-macos:
+    name: Build macOS (Universal)
+    runs-on: macos-15
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      # 25-40 GB of Unity cache; without this every run re-imports the project.
+      - name: Cache Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-macOS-${{ hashFiles('Packages/packages-lock.json', 'ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: |
+            Library-macOS-
+
+      - name: Build
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: StandaloneOSX
+          # Universal keeps the Intel slice for old Macs and the arm64 slice for
+          # Apple silicon. Intel-only would break on modern hardware, and Apple
+          # silicon-only would drop the machines this port exists for.
+          unityVersion: 6000.2.6f2
+          # IL2CPP is mandatory for arm64; Xcode is preinstalled on the runner.
+          customBuildPath: Builds/macOS/Universal/MateEngineX.app
+          buildMethod: MEBuildMacOS.BuildUniversalCI
+          allowDirtyBuild: true
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MateEngineX-macOS-universal
+          path: Builds/macOS/Universal
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Show plugin architectures
+        if: always()
+        run: |
+          BIN="Assets/Plugins/MacOS/MateMacNative.bundle/Contents/MacOS/MateMacNative"
+          if [ -f "$BIN" ]; then
+            echo "Native plugin: $(lipo -archs "$BIN" 2>/dev/null || echo 'not a fat binary')"
+          else
+            echo "Native plugin not present - basics only build (expected if build.sh was not run)."
+          fi

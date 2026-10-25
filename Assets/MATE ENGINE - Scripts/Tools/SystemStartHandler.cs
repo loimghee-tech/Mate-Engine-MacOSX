@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
@@ -148,6 +148,15 @@ public class SystemStartHandler : MonoBehaviour
         {
             Debug.LogError("[SystemStartHandler] Registry write failed: " + ex.Message);
         }
+#elif UNITY_STANDALONE_OSX
+        // macOS port: replaces the HKCU\...\Run key with a Login Item.
+        // MacDesktop.SetLaunchAtLogin uses SMAppService on macOS 13+ and falls
+        // back to a LaunchAgent plist on 11-12.
+        if (MateEngine.MacOS.MacDesktop.SetLaunchAtLogin(enable))
+            Debug.Log("[SystemStartHandler] Autostart " + (enable ? "enabled" : "disabled") + " (macOS login item).");
+        else
+            Debug.LogWarning("[SystemStartHandler] Could not change the macOS login item. " +
+                             "The native backend may not be loaded; see the startup report.");
 #else
         Debug.Log("[SystemStartHandler] Registry disabled on this platform.");
 #endif

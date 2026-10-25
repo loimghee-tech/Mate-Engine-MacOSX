@@ -1,6 +1,27 @@
 # MateEngine for Linux (Unoffical)
 Github: https://github.com/Marksonthegamer/Mate-Engine-Linux-Port
 
+# MateEngine for macOS (Unofficial, work in progress)
+Windows-only APIs are the only thing standing between MateEngine and macOS: the
+avatar, VRM support, animations, shaders and mods are plain Unity and portable.
+The transparent click-through window already works on both Intel and Apple
+silicon, because UniWindowController ships a universal `LibUniWinC.bundle`.
+
+- **Feasibility audit, feature matrix, effort estimate and Intel-specific
+  guidance:** [`PORTING-macOS.md`](PORTING-macOS.md)
+- **Native backend plugin (source + build script):** [`macos-native/`](macos-native/README.md)
+- **Step-by-step build instructions:** [`BUILDING-macOS.md`](BUILDING-macOS.md)
+- **Optional native plugin:** on a Mac run `./macos-native/build.sh`, then in Unity
+  `MateEngine → Build → Validate macOS setup` → `MateEngine → Build → macOS Universal`
+
+Status: the **basics work** — VRM upload, idle/drag/dance animations, spring
+bones, mouse tracking, transparent click-through window. The only native
+dependency they need is UniWindowController's `LibUniWinC.bundle`, which already
+ships universal, so no native build step is required for them. Window sitting,
+Dock sitting, big screen mode, screensaver, screen capture and dance-to-music are
+switched off on macOS (see `PORTING-macOS.md`). Nothing in this tree changes the
+Windows build.
+
 # Support MateEngine on Steam!
 Buy on Steam: https://store.steampowered.com/app/3625270/MateEngine/
 Or use it for free here! Any Purchase on Steam will help Developement and future updates!

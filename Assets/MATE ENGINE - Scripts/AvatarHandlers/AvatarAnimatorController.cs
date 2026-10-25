@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using NAudio.CoreAudioApi;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -47,8 +47,19 @@ public class AvatarAnimatorController : MonoBehaviour
     {
         animator ??= GetComponent<Animator>();
         Application.runInBackground = true;
+#if UNITY_STANDALONE_OSX
+        // macOS port: NAudio wraps WASAPI, which does not exist on macOS, and
+        // constructing MMDeviceEnumerator throws. Leaving both fields null makes
+        // CheckForSound() bail out early and IsValidAppPlaying() fall into its
+        // existing catch, so idle / drag / dance ANIMATIONS keep working - only
+        // "dance while music plays" is switched off. The CoreAudio process-tap
+        // replacement is scoped in macos-native/MateMacAudio.m.
+        enumerator = null;
+        defaultDevice = null;
+#else
         enumerator = new MMDeviceEnumerator();
         defaultDevice = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+#endif
 
         animator.SetFloat(isFemaleParam, enableHusbandoMode ? 0f : 1f);
         animator.SetFloat(isMaleParam, enableHusbandoMode ? 1f : 0f);

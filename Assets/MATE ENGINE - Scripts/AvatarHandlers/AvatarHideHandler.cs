@@ -490,7 +490,13 @@ public class AvatarHideHandler : MonoBehaviour
 
     void SetTopMost(bool on)
     {
+#if UNITY_STANDALONE_OSX
+        // Called from OnDisable, so this runs on every teardown even though the
+        // rest of this component is Windows-only. Top-most is owned by
+        // UniWindowController on macOS, so this is intentionally a no-op.
+#else
         SetWindowPos(unityHWND, on ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+#endif
     }
 
     delegate bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData);

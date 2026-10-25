@@ -76,6 +76,11 @@ public class AvatarBigScreenTimer : MonoBehaviour
 
     void Start()
     {
+#if UNITY_STANDALONE_OSX
+        // macOS port: alarm/timer rides on big screen mode, which is disabled on macOS.
+        enabled = false;
+        return;
+#endif
         bigScreenHandler = GetComponent<AvatarBigScreenHandler>();
         avatarAnimator = GetComponent<Animator>();
         alarmActive = false;

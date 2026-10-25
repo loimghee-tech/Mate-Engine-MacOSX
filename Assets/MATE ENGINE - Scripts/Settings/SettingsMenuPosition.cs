@@ -49,9 +49,11 @@ public class SettingsMenuPosition : MonoBehaviour
 
     void Start()
     {
+#if !UNITY_STANDALONE_OSX
         unityHWND = Process.GetCurrentProcess().MainWindowHandle;
         enumProc = EnumProc;
         RefreshMonitors();
+#endif
         foreach (var menu in menus)
         {
             if (!menu.settingsMenu) continue;
@@ -63,6 +65,10 @@ public class SettingsMenuPosition : MonoBehaviour
 
     void Update()
     {
+#if UNITY_STANDALONE_OSX
+        UpdateMacOS();
+        return;
+#endif
         if (unityHWND == IntPtr.Zero) return;
 
         monitorTimer += Time.unscaledDeltaTime;
@@ -101,6 +107,60 @@ public class SettingsMenuPosition : MonoBehaviour
             }
         }
     }
+
+#if UNITY_STANDALONE_OSX
+    /// <summary>
+    /// macOS equivalent of the RECT edge test below: flip the menus when the
+    /// window's right edge is within `edgeMargin` of the right edge of the
+    /// display it is on. Uses UniWindowController for the window rect and the
+    /// native plugin for display frames; stays inert when either is missing.
+    /// </summary>
+    void UpdateMacOS()
+    {
+        float now = Time.unscaledTime;
+        if (now - _lastMacCheck < 1f / Mathf.Max(1f, checkFPS)) return;
+        _lastMacCheck = now;
+
+        if (!MateEngine.MacOS.DesktopGeometry.IsGeometryAvailable) return;
+
+        var displays = MateEngine.MacOS.MacDesktop.GetDisplays();
+        if (displays.Length == 0) return;
+
+        Rect win = MateEngine.MacOS.DesktopGeometry.WindowRect();
+
+        // Pick the display the window overlaps most.
+        Rect screen = displays[0].frame;
+        float best = -1f;
+        for (int i = 0; i < displays.Length; i++)
+        {
+            Rect f = displays[i].frame;
+            float w = Mathf.Min(win.xMax, f.xMax) - Mathf.Max(win.x, f.x);
+            float h = Mathf.Min(win.yMax, f.yMax) - Mathf.Max(win.y, f.y);
+            float area = (w > 0f && h > 0f) ? w * h : 0f;
+            if (area > best) { best = area; screen = f; }
+        }
+
+        bool atRightEdge = win.xMax >= (screen.xMax - edgeMargin);
+        if (!initedEdge) { lastAtRightEdge = atRightEdge; initedEdge = true; }
+
+        if (atRightEdge == lastAtRightEdge) return;
+        lastAtRightEdge = atRightEdge;
+
+        for (int i = 0; i < menus.Count; i++)
+        {
+            var m = menus[i];
+            if (!m.settingsMenu) continue;
+            Vector2 target = new Vector2(atRightEdge ? -m.originalX : m.originalX, m.originalY);
+            if (m.lastApplied != target)
+            {
+                m.settingsMenu.anchoredPosition = target;
+                m.lastApplied = target;
+            }
+        }
+    }
+
+    float _lastMacCheck;
+#endif
 
     bool EnumProc(IntPtr hMonitor, IntPtr hdc, ref RECT lprc, IntPtr data)
     {

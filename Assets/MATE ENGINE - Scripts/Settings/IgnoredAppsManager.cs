@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
@@ -21,8 +21,16 @@ public class AllowedAppsManager : MonoBehaviour
 
     private void Start()
     {
+#if UNITY_STANDALONE_OSX
+        // macOS port: no WASAPI session enumeration, so there is nothing to
+        // enumerate. The picker stays empty and the saved allowedApps list is
+        // left untouched.
+        enumerator = null;
+        defaultDevice = null;
+#else
         enumerator = new MMDeviceEnumerator();
         UpdateDefaultDevice();
+#endif
 
         addToAllowedListButton.onClick.AddListener(() =>
         {
@@ -48,7 +56,9 @@ public class AllowedAppsManager : MonoBehaviour
     private void UpdateDefaultDevice()
     {
         defaultDevice?.Dispose();
-        defaultDevice = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+        // Platform-safe: on macOS (and anywhere NAudio is unavailable) the
+        // enumerator is null and there is simply no default device.
+        defaultDevice = enumerator?.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
     }
 
     private void RefreshRunningAppsDropdown()

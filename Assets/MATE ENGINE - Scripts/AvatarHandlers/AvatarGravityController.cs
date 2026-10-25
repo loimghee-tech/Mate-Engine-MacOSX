@@ -91,12 +91,22 @@ public class AvatarGravityController : MonoBehaviour
 
     private Vector2Int GetWindowPosition()
     {
+#if UNITY_STANDALONE_OSX
+        // macOS port: LibUniWinC (a universal .bundle shipped by
+        // UniWindowController) reports the window origin. Only the frame-to-frame
+        // delta is used, so any consistent origin works - no native plugin of
+        // our own required. See PORTING-macOS.md.
+        return MateEngine.MacOS.DesktopGeometry.WindowTopLeft();
+#else
         GetWindowRect(unityHWND, out RECT rect);
         return new Vector2Int(rect.left, rect.top);
+#endif
     }
 
+#if !UNITY_STANDALONE_OSX
     [DllImport("user32.dll")]
     private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+#endif
 
     [StructLayout(LayoutKind.Sequential)]
     private struct RECT

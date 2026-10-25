@@ -106,8 +106,19 @@ public class SteamManager : MonoBehaviour {
 		catch (System.DllNotFoundException e) { // We catch this exception here, as it will be the first occurrence of it.
 			Debug.LogError("[Steamworks.NET] Could not load [lib]steam_api.dll/so/dylib. It's likely not in the correct location. Refer to the README for more details.\n" + e, this);
 
+#if UNITY_STANDALONE_OSX
+			// macOS port: the free GitHub build has no Steam edition, so a missing
+			// or unloadable steam_api bundle must not kill the app -- quitting here
+			// looks like an instant crash on first launch. Continue with Steam
+			// features disabled; SteamManager.Initialized stays false and every
+			// caller already checks it. Windows keeps the original behaviour.
+			Debug.LogWarning("[Steamworks.NET] Continuing without Steam on macOS: " +
+				"Workshop, DLC and Rich Presence are unavailable.");
+			return;
+#else
 			Application.Quit();
 			return;
+#endif
 		}
 
 		// Initializes the Steamworks API.

@@ -48,6 +48,13 @@ public class AvatarBigScreenScreenSaver : MonoBehaviour
 
     void Start()
     {
+#if UNITY_STANDALONE_OSX
+        // macOS port: the idle detector polls the global cursor via user32.GetCursorPos; the macOS
+        // route needs CGEventSource plus a permission prompt, and this feature is out of
+        // scope for the first cut.
+        enabled = false;
+        return;
+#endif
         bigScreenHandler = GetComponent<AvatarBigScreenHandler>();
         avatarAnimator = GetComponent<Animator>();
         lastMousePos = GetGlobalMousePosition();
