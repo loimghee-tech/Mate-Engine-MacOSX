@@ -89,6 +89,41 @@ bar icon isn't ported yet, so **Cmd+Q** is the way to quit. If the app seems
 
 ---
 
+## 3b. Read the startup report first
+
+On launch the app writes one block to the log telling you which subsystems came
+up. Find it with **Console.app** (filter for `MateEngineX`) or by running the
+binary directly:
+
+```bash
+./MateEngineX.app/Contents/MacOS/MateEngineX
+```
+
+```
+=== MateEngine macOS startup report ===
+  Unity            : 6000.2.6f2
+  OS               : macOS 14.5
+  Graphics API     : Metal
+  Window geometry  : OK  (LibUniWinC responding)
+  Native backend   : not loaded - MateMacNative.bundle not found. Run macos-native/build.sh.
+  Steam            : not initialised (expected outside the Steam edition; ...)
+  Feature status on macOS:
+    + VRM load, animations, spring bones, mouse tracking
+    ...
+```
+
+What to look for:
+
+- **`Window geometry : OK`** — the important one. Without it, dragging, cursor
+  tracking and spring-bone physics are inert.
+- **`Native backend : not loaded`** — expected if you skipped
+  `macos-native/build.sh`. Only affects Dock sitting, the menu bar icon and
+  window enumeration, none of which are wired to UI yet.
+- **`Steam : not initialised`** — normal. The free build has no Steam edition.
+
+The report comes from `Assets/MATE ENGINE - MacOS Port/Runtime/MacStartupReport.cs`.
+Set `MacStartupReport.LogOnStartup = false` to silence it once things are stable.
+
 ## 4. Troubleshooting
 
 | Symptom | Cause | Fix |
@@ -99,6 +134,8 @@ bar icon isn't ported yet, so **Cmd+Q** is the way to quit. If the app seems
 | Avatar invisible, window fine | Camera background not being cleared to transparent, or the VRM failed to load | Check the console for `[VRMLoader]` errors. Try the default model first via the menu. |
 | Clicking the avatar does nothing | Click-through enabled, or the window ignores hit tests | Disable *Is Click Through* on the UniWindowController component; make sure an EventSystem exists in the scene. |
 | **"Load model" does nothing on Apple silicon** | `StandaloneFileBrowser.bundle` is **x86_64-only** | Expected and logged. Rebuild that bundle as universal, or load a model path that's already saved. Not an issue on Intel. |
+| **App closes immediately after launch** | Something called `Application.Quit()` in startup | Check the log. Steam no longer does this on macOS, so if it happens, read the last log line for the real exception. |
+| Log says `Native backend : not loaded` | `build.sh` never run | Harmless for the basics. Run `./macos-native/build.sh` on a Mac if you want the plugin machinery present. |
 | No sound / never dances to music | By design — dance-to-music is off | The CoreAudio tap is unimplemented; animations themselves are unaffected. |
 | Avatar doesn't sit on windows | By design | Window sitting needs `CGWindowList` and isn't ported. |
 | App is "damaged and can't be opened" | Unsigned + quarantined download | `xattr -dr com.apple.quarantine MateEngineX.app`, or sign/notarise properly (step 6). |
@@ -153,6 +190,17 @@ Notes:
   standalone.
 
 ---
+
+## 6b. Building without a Mac (CI)
+
+`.github/workflows/macos-build.yml` builds the universal `.app` on a GitHub
+Actions macOS runner and uploads it as an artifact. It needs three repository
+secrets — `UNITY_LICENSE`, `UNITY_EMAIL`, `UNITY_PASSWORD` — from the GameCI
+activation flow. Without them the job stops at activation, not compilation.
+
+This is the only way to get an actual `.app` out of this repo without a Mac in
+front of you. The workflow has never been run, so treat its first execution as
+part of the debugging rather than a trusted result.
 
 ## 7. Optional: build the native plugin
 

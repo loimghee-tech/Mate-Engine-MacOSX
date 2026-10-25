@@ -25,13 +25,32 @@ namespace MateEngine.MacOS
 {
     public static class DesktopGeometry
     {
+        // Cached because these getters run every frame and
+        // UniWindowController.current falls back to a scene-wide search
+        // (FindAnyObjectByType) whenever its internal reference is unset.
+        private static Kirurobo.UniWindowController _controller;
+        private static float _nextLookup;
+
+        private static Kirurobo.UniWindowController Controller()
+        {
+            if (_controller != null) return _controller;
+
+            // Rate-limited so a scene with no controller does not allocate a
+            // search every single frame.
+            if (Time.unscaledTime < _nextLookup) return null;
+            _nextLookup = Time.unscaledTime + 1f;
+
+            _controller = Kirurobo.UniWindowController.current;
+            return _controller;
+        }
+
         /// <summary>
         /// Top-left corner of our own window in desktop points.
         /// Returns Vector2Int.zero when the window controller is not ready yet.
         /// </summary>
         public static Vector2Int WindowTopLeft()
         {
-            var controller = Kirurobo.UniWindowController.current;
+            var controller = Controller();
             if (controller == null) return Vector2Int.zero;
 
             Vector2 pos = controller.windowPosition;
@@ -41,7 +60,7 @@ namespace MateEngine.MacOS
         /// <summary>Size of our own window in points.</summary>
         public static Vector2Int WindowSize()
         {
-            var controller = Kirurobo.UniWindowController.current;
+            var controller = Controller();
             if (controller == null) return Vector2Int.zero;
 
             Vector2 size = controller.windowSize;
@@ -75,7 +94,7 @@ namespace MateEngine.MacOS
         {
             get
             {
-                var controller = Kirurobo.UniWindowController.current;
+                var controller = Controller();
                 if (controller == null) return false;
 
                 Vector2 size = controller.windowSize;
